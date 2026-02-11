@@ -43,7 +43,6 @@ target/
 
 # Don't want to see any ROMs being uploaded
 # This project is not for pirating games!
-*.gb
 *.gbc
 *.rom
 DMG_ROM.bin
