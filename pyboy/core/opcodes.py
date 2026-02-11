@@ -2674,8 +2674,8 @@ def ADD_E8(cpu, v): # E8 ADD SP,r8
     b = CasNum.get_n(((v ^ 0x80) - 0x80))
     t = a + b
     flag = CasNum.get_n(0b00000000)
-    flag = flag | (CasNum.get_n(((cpu.SP & CasNum.get_n(0xF)) + (v & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
-    flag = flag | (CasNum.get_n(((cpu.SP & CasNum.get_n(0xFF)) + (v & CasNum.get_n(0xFF))) > CasNum.get_n(0xFF)) << FLAGC)
+    flag = flag | (CasNum.get_n(((CasNum.get_n(cpu.SP) & CasNum.get_n(0xF)) + (CasNum.get_n(v) & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(((CasNum.get_n(cpu.SP) & CasNum.get_n(0xFF)) + (CasNum.get_n(v) & CasNum.get_n(0xFF))) > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F = 0b00000000
     cpu.F |= int(flag.p.x)
     t = t & CasNum.get_n(0xFFFF)
