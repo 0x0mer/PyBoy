@@ -7,6 +7,7 @@ import array
 
 import pyboy
 logger = pyboy.logging.get_logger(__name__)
+from casnum import CasNum, zero
 
 FLAGC, FLAGH, FLAGN, FLAGZ = range(4, 8)
 
@@ -39,45 +40,45 @@ def LD_02(cpu): # 02 LD (BC),A
 
 
 def INC_03(cpu): # 03 INC BC
-    a = ((cpu.B << 8) + cpu.C)
-    b = 1
+    a = CasNum.get_n(((cpu.B << 8) + cpu.C))
+    b = CasNum.get_n(1)
     t = a + b
     # No flag operations
-    t &= 0xFFFF
-    cpu.B = t >> 8
-    cpu.C = t & 0x00FF
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.B = int(t.p.x) >> 8
+    cpu.C = int(t.p.x) & 0x00FF
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_04(cpu): # 04 INC B
-    a = cpu.B
-    b = 1
+    a = CasNum.get_n(cpu.B)
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.B = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.B = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_05(cpu): # 05 DEC B
-    a = cpu.B
-    b = 1
+    a = CasNum.get_n(cpu.B)
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.B = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.B = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -113,16 +114,16 @@ def LD_08(cpu, v): # 08 LD (a16),SP
 
 
 def ADD_09(cpu): # 09 ADD HL,BC
-    a = cpu.HL
-    b = ((cpu.B << 8) + cpu.C)
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(((cpu.B << 8) + cpu.C))
     t = a + b
-    flag = 0b00000000
-    flag |= (((a & 0xFFF) + (b & 0xFFF)) > 0xFFF) << FLAGH
-    flag |= (t > 0xFFFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xFFF)) + (b & CasNum.get_n(0xFFF))) > CasNum.get_n(0xFFF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFFFF)) << FLAGC)
     cpu.F &= 0b10000000
-    cpu.F |= flag
-    t &= 0xFFFF
-    cpu.HL = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -136,45 +137,45 @@ def LD_0A(cpu): # 0A LD A,(BC)
 
 
 def DEC_0B(cpu): # 0B DEC BC
-    a = ((cpu.B << 8) + cpu.C)
-    b = 1
+    a = CasNum.get_n(((cpu.B << 8) + cpu.C))
+    b = CasNum.get_n(1)
     t = a - b
     # No flag operations
-    t &= 0xFFFF
-    cpu.B = t >> 8
-    cpu.C = t & 0x00FF
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.B = int(t.p.x) >> 8
+    cpu.C = int(t.p.x) & 0x00FF
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_0C(cpu): # 0C INC C
-    a = cpu.C
-    b = 1
+    a = CasNum.get_n(cpu.C)
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.C = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.C = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_0D(cpu): # 0D DEC C
-    a = cpu.C
-    b = 1
+    a = CasNum.get_n(cpu.C)
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.C = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.C = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -226,45 +227,45 @@ def LD_12(cpu): # 12 LD (DE),A
 
 
 def INC_13(cpu): # 13 INC DE
-    a = ((cpu.D << 8) + cpu.E)
-    b = 1
+    a = CasNum.get_n(((cpu.D << 8) + cpu.E))
+    b = CasNum.get_n(1)
     t = a + b
     # No flag operations
-    t &= 0xFFFF
-    cpu.D = t >> 8
-    cpu.E = t & 0x00FF
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.D = int(t.p.x) >> 8
+    cpu.E = int(t.p.x) & 0x00FF
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_14(cpu): # 14 INC D
-    a = cpu.D
-    b = 1
+    a = CasNum.get_n(cpu.D)
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.D = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.D = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_15(cpu): # 15 DEC D
-    a = cpu.D
-    b = 1
+    a = CasNum.get_n(cpu.D)
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.D = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.D = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -298,16 +299,16 @@ def JR_18(cpu, v): # 18 JR r8
 
 
 def ADD_19(cpu): # 19 ADD HL,DE
-    a = cpu.HL
-    b = ((cpu.D << 8) + cpu.E)
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(((cpu.D << 8) + cpu.E))
     t = a + b
-    flag = 0b00000000
-    flag |= (((a & 0xFFF) + (b & 0xFFF)) > 0xFFF) << FLAGH
-    flag |= (t > 0xFFFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xFFF)) + (b & CasNum.get_n(0xFFF))) > CasNum.get_n(0xFFF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFFFF)) << FLAGC)
     cpu.F &= 0b10000000
-    cpu.F |= flag
-    t &= 0xFFFF
-    cpu.HL = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -321,45 +322,45 @@ def LD_1A(cpu): # 1A LD A,(DE)
 
 
 def DEC_1B(cpu): # 1B DEC DE
-    a = ((cpu.D << 8) + cpu.E)
-    b = 1
+    a = CasNum.get_n(((cpu.D << 8) + cpu.E))
+    b = CasNum.get_n(1)
     t = a - b
     # No flag operations
-    t &= 0xFFFF
-    cpu.D = t >> 8
-    cpu.E = t & 0x00FF
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.D = int(t.p.x) >> 8
+    cpu.E = int(t.p.x) & 0x00FF
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_1C(cpu): # 1C INC E
-    a = cpu.E
-    b = 1
+    a = CasNum.get_n(cpu.E)
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.E = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.E = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_1D(cpu): # 1D DEC E
-    a = cpu.E
-    b = 1
+    a = CasNum.get_n(cpu.E)
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.E = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.E = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -414,44 +415,44 @@ def LD_22(cpu): # 22 LD (HL+),A
 
 
 def INC_23(cpu): # 23 INC HL
-    a = cpu.HL
-    b = 1
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(1)
     t = a + b
     # No flag operations
-    t &= 0xFFFF
-    cpu.HL = t
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_24(cpu): # 24 INC H
-    a = (cpu.HL >> 8)
-    b = 1
+    a = CasNum.get_n((cpu.HL >> 8))
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.HL = (cpu.HL & 0x00FF) | (t << 8)
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.HL = (cpu.HL & 0x00FF) | (int(t.p.x) << 8)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_25(cpu): # 25 DEC H
-    a = (cpu.HL >> 8)
-    b = 1
+    a = CasNum.get_n((cpu.HL >> 8))
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.HL = (cpu.HL & 0x00FF) | (t << 8)
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.HL = (cpu.HL & 0x00FF) | (int(t.p.x) << 8)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -499,16 +500,16 @@ def JR_28(cpu, v): # 28 JR Z,r8
 
 
 def ADD_29(cpu): # 29 ADD HL,HL
-    a = cpu.HL
-    b = cpu.HL
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(cpu.HL)
     t = a + b
-    flag = 0b00000000
-    flag |= (((a & 0xFFF) + (b & 0xFFF)) > 0xFFF) << FLAGH
-    flag |= (t > 0xFFFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xFFF)) + (b & CasNum.get_n(0xFFF))) > CasNum.get_n(0xFFF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFFFF)) << FLAGC)
     cpu.F &= 0b10000000
-    cpu.F |= flag
-    t &= 0xFFFF
-    cpu.HL = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -524,44 +525,44 @@ def LD_2A(cpu): # 2A LD A,(HL+)
 
 
 def DEC_2B(cpu): # 2B DEC HL
-    a = cpu.HL
-    b = 1
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(1)
     t = a - b
     # No flag operations
-    t &= 0xFFFF
-    cpu.HL = t
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_2C(cpu): # 2C INC L
-    a = (cpu.HL & 0xFF)
-    b = 1
+    a = CasNum.get_n((cpu.HL & 0xFF))
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.HL = (cpu.HL & 0xFF00) | (t & 0xFF)
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.HL = (cpu.HL & 0xFF00) | (int(t.p.x) & 0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_2D(cpu): # 2D DEC L
-    a = (cpu.HL & 0xFF)
-    b = 1
+    a = CasNum.get_n((cpu.HL & 0xFF))
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.HL = (cpu.HL & 0xFF00) | (t & 0xFF)
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.HL = (cpu.HL & 0xFF00) | (int(t.p.x) & 0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -612,46 +613,46 @@ def LD_32(cpu): # 32 LD (HL-),A
 
 
 def INC_33(cpu): # 33 INC SP
-    a = cpu.SP
-    b = 1
+    a = CasNum.get_n(cpu.SP)
+    b = CasNum.get_n(1)
     t = a + b
     # No flag operations
-    t &= 0xFFFF
-    cpu.SP = t
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.SP = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_34(cpu): # 34 INC (HL)
-    a = cpu.mb.getitem(cpu.HL)
-    b = 1
+    a = CasNum.get_n(cpu.mb.getitem(cpu.HL))
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.cycles += 4
-    cpu.mb.setitem(cpu.HL, t)
+    cpu.mb.setitem(cpu.HL, int(t.p.x))
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def DEC_35(cpu): # 35 DEC (HL)
-    a = cpu.mb.getitem(cpu.HL)
-    b = 1
+    a = CasNum.get_n(cpu.mb.getitem(cpu.HL))
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.cycles += 4
-    cpu.mb.setitem(cpu.HL, t)
+    cpu.mb.setitem(cpu.HL, int(t.p.x))
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -686,16 +687,16 @@ def JR_38(cpu, v): # 38 JR C,r8
 
 
 def ADD_39(cpu): # 39 ADD HL,SP
-    a = cpu.HL
-    b = cpu.SP
+    a = CasNum.get_n(cpu.HL)
+    b = CasNum.get_n(cpu.SP)
     t = a + b
-    flag = 0b00000000
-    flag |= (((a & 0xFFF) + (b & 0xFFF)) > 0xFFF) << FLAGH
-    flag |= (t > 0xFFFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xFFF)) + (b & CasNum.get_n(0xFFF))) > CasNum.get_n(0xFFF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFFFF)) << FLAGC)
     cpu.F &= 0b10000000
-    cpu.F |= flag
-    t &= 0xFFFF
-    cpu.HL = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.HL = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -711,44 +712,44 @@ def LD_3A(cpu): # 3A LD A,(HL-)
 
 
 def DEC_3B(cpu): # 3B DEC SP
-    a = cpu.SP
-    b = 1
+    a = CasNum.get_n(cpu.SP)
+    b = CasNum.get_n(1)
     t = a - b
     # No flag operations
-    t &= 0xFFFF
-    cpu.SP = t
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.SP = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def INC_3C(cpu): # 3C INC A
-    a = cpu.A
-    b = 1
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(1)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def DEC_3D(cpu): # 3D DEC A
-    a = cpu.A
-    b = 1
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(1)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
     cpu.F &= 0b00010000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -1218,1048 +1219,1048 @@ def LD_7F(cpu): # 7F LD A,A
 
 
 def ADD_80(cpu): # 80 ADD A,B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_81(cpu): # 81 ADD A,C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_82(cpu): # 82 ADD A,D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_83(cpu): # 83 ADD A,E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_84(cpu): # 84 ADD A,H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_85(cpu): # 85 ADD A,L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADD_86(cpu): # 86 ADD A,(HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def ADD_87(cpu): # 87 ADD A,A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_88(cpu): # 88 ADC A,B
-    a = cpu.A
-    b = cpu.B
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_89(cpu): # 89 ADC A,C
-    a = cpu.A
-    b = cpu.C
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_8A(cpu): # 8A ADC A,D
-    a = cpu.A
-    b = cpu.D
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_8B(cpu): # 8B ADC A,E
-    a = cpu.A
-    b = cpu.E
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_8C(cpu): # 8C ADC A,H
-    a = cpu.A
-    b = (cpu.HL >> 8)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_8D(cpu): # 8D ADC A,L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def ADC_8E(cpu): # 8E ADC A,(HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def ADC_8F(cpu): # 8F ADC A,A
-    a = cpu.A
-    b = cpu.A
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_90(cpu): # 90 SUB B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_91(cpu): # 91 SUB C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_92(cpu): # 92 SUB D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_93(cpu): # 93 SUB E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_94(cpu): # 94 SUB H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_95(cpu): # 95 SUB L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SUB_96(cpu): # 96 SUB (HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def SUB_97(cpu): # 97 SUB A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_98(cpu): # 98 SBC A,B
-    a = cpu.A
-    b = cpu.B
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_99(cpu): # 99 SBC A,C
-    a = cpu.A
-    b = cpu.C
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_9A(cpu): # 9A SBC A,D
-    a = cpu.A
-    b = cpu.D
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_9B(cpu): # 9B SBC A,E
-    a = cpu.A
-    b = cpu.E
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_9C(cpu): # 9C SBC A,H
-    a = cpu.A
-    b = (cpu.HL >> 8)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_9D(cpu): # 9D SBC A,L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def SBC_9E(cpu): # 9E SBC A,(HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def SBC_9F(cpu): # 9F SBC A,A
-    a = cpu.A
-    b = cpu.A
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A0(cpu): # A0 AND B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A1(cpu): # A1 AND C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A2(cpu): # A2 AND D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A3(cpu): # A3 AND E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A4(cpu): # A4 AND H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A5(cpu): # A5 AND L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def AND_A6(cpu): # A6 AND (HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def AND_A7(cpu): # A7 AND A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_A8(cpu): # A8 XOR B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_A9(cpu): # A9 XOR C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_AA(cpu): # AA XOR D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_AB(cpu): # AB XOR E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_AC(cpu): # AC XOR H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_AD(cpu): # AD XOR L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def XOR_AE(cpu): # AE XOR (HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def XOR_AF(cpu): # AF XOR A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B0(cpu): # B0 OR B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B1(cpu): # B1 OR C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B2(cpu): # B2 OR D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B3(cpu): # B3 OR E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B4(cpu): # B4 OR H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B5(cpu): # B5 OR L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def OR_B6(cpu): # B6 OR (HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def OR_B7(cpu): # B7 OR A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_B8(cpu): # B8 CP B
-    a = cpu.A
-    b = cpu.B
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.B)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_B9(cpu): # B9 CP C
-    a = cpu.A
-    b = cpu.C
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.C)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_BA(cpu): # BA CP D
-    a = cpu.A
-    b = cpu.D
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.D)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_BB(cpu): # BB CP E
-    a = cpu.A
-    b = cpu.E
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.E)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_BC(cpu): # BC CP H
-    a = cpu.A
-    b = (cpu.HL >> 8)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL >> 8))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_BD(cpu): # BD CP L
-    a = cpu.A
-    b = (cpu.HL & 0xFF)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n((cpu.HL & 0xFF))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
 
 
 def CP_BE(cpu): # BE CP (HL)
-    a = cpu.A
-    b = cpu.mb.getitem(cpu.HL)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.mb.getitem(cpu.HL))
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
 
 
 def CP_BF(cpu): # BF CP A
-    a = cpu.A
-    b = cpu.A
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(cpu.A)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 1
     cpu.PC &= 0xFFFF
     cpu.cycles += 4
@@ -2328,17 +2329,17 @@ def PUSH_C5(cpu): # C5 PUSH BC
 
 
 def ADD_C6(cpu, v): # C6 ADD A,d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a + b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2419,18 +2420,18 @@ def CALL_CD(cpu, v): # CD CALL a16
 
 
 def ADC_CE(cpu, v): # CE ADC A,d8
-    a = cpu.A
-    b = v
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a + b + c
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) + (b & 0xF) + ((cpu.F & (1 << FLAGC)) != 0)) > 0xF) << FLAGH
-    flag |= (t > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) + (b & CasNum.get_n(0xF)) + CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2505,17 +2506,17 @@ def PUSH_D5(cpu): # D5 PUSH DE
 
 
 def SUB_D6(cpu, v): # D6 SUB d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2580,18 +2581,18 @@ def CALL_DC(cpu, v): # DC CALL C,a16
 
 
 def SBC_DE(cpu, v): # DE SBC A,d8
-    a = cpu.A
-    b = v
-    c = ((cpu.F & (1 << FLAGC)) != 0)
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
+    c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)
     t = a - b - c
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF) - ((cpu.F & (1 << FLAGC)) != 0)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF)) - CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2643,15 +2644,15 @@ def PUSH_E5(cpu): # E5 PUSH HL
 
 
 def AND_E6(cpu, v): # E6 AND d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a & b
-    flag = 0b00100000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00100000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2669,16 +2670,16 @@ def RST_E7(cpu): # E7 RST 20H
 
 
 def ADD_E8(cpu, v): # E8 ADD SP,r8
-    a = cpu.SP
-    b = ((v ^ 0x80) - 0x80)
+    a = CasNum.get_n(cpu.SP)
+    b = CasNum.get_n(((v ^ 0x80) - 0x80))
     t = a + b
-    flag = 0b00000000
-    flag |= (((cpu.SP & 0xF) + (v & 0xF)) > 0xF) << FLAGH
-    flag |= (((cpu.SP & 0xFF) + (v & 0xFF)) > 0xFF) << FLAGC
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n(((cpu.SP & CasNum.get_n(0xF)) + (v & CasNum.get_n(0xF))) > CasNum.get_n(0xF)) << FLAGH)
+    flag = flag | (CasNum.get_n(((cpu.SP & CasNum.get_n(0xFF)) + (v & CasNum.get_n(0xFF))) > CasNum.get_n(0xFF)) << FLAGC)
     cpu.F = 0b00000000
-    cpu.F |= flag
-    t &= 0xFFFF
-    cpu.SP = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFFFF)
+    cpu.SP = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 16
@@ -2698,15 +2699,15 @@ def LD_EA(cpu, v): # EA LD (a16),A
 
 
 def XOR_EE(cpu, v): # EE XOR d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a ^ b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2766,15 +2767,15 @@ def PUSH_F5(cpu): # F5 PUSH AF
 
 
 def OR_F6(cpu, v): # F6 OR d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a | b
-    flag = 0b00000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
+    flag = CasNum.get_n(0b00000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
-    cpu.A = t
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
+    cpu.A = int(t.p.x)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8
@@ -2829,16 +2830,16 @@ def EI_FB(cpu): # FB EI
 
 
 def CP_FE(cpu, v): # FE CP d8
-    a = cpu.A
-    b = v
+    a = CasNum.get_n(cpu.A)
+    b = CasNum.get_n(v)
     t = a - b
-    flag = 0b01000000
-    flag |= ((t & 0xFF) == 0) << FLAGZ
-    flag |= (((a & 0xF) - (b & 0xF)) < 0) << FLAGH
-    flag |= (t < 0) << FLAGC
+    flag = CasNum.get_n(0b01000000)
+    flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)
+    flag = flag | (CasNum.get_n(((a & CasNum.get_n(0xF)) - (b & CasNum.get_n(0xF))) < zero) << FLAGH)
+    flag = flag | (CasNum.get_n(t < zero) << FLAGC)
     cpu.F &= 0b00000000
-    cpu.F |= flag
-    t &= 0xFF
+    cpu.F |= int(flag.p.x)
+    t = t & CasNum.get_n(0xFF)
     cpu.PC += 2
     cpu.PC &= 0xFFFF
     cpu.cycles += 8

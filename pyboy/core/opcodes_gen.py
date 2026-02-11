@@ -21,6 +21,7 @@ import array
 
 import pyboy
 logger = pyboy.logging.get_logger(__name__)
+from casnum import CasNum, zero
 
 FLAGC, FLAGH, FLAGN, FLAGZ = range(4, 8)
 
@@ -362,31 +363,57 @@ class OpcodeData:
     # and Zero flags are always cleared. They also calculate SP +
     # SIGNED immediate byte and put the result into SP or HL,
     # respectively."
-    def handleflags16bit_E8_F8(self, r0, r1, op, carry=False):
-        flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
+    def handleflags16bit_E8_F8(self, r0, r1, op, carry=False, called_from_alu=False):
+        if called_from_alu:
+            flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
 
-        # Only in case we do a dynamic operation, do we include the
-        # following calculations
-        if flagmask == 0b11110000:
-            return ["# No flag operations"]
+            # Only in case we do a dynamic operation, do we include the
+            # following calculations
+            if flagmask == 0b11110000:
+                return ["# No flag operations"]
 
-        lines = []
-        # Sets the flags that always get set by operation
-        lines.append("flag = " + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b"))
+            lines = []
+            # Sets the flags that always get set by operation
+            lines.append("flag = CasNum.get_n(" + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b") + ")")
 
-        # flag |= (((cpu.SP & 0xF) + (v & 0xF)) > 0xF) << FLAGH
-        if self.flag_h == "H":
-            c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
-            lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) > 0xF) << FLAGH" % (r0, op, r1, c))
+            # flag |= (((cpu.SP & 0xF) + (v & 0xF)) > 0xF) << FLAGH
+            if self.flag_h == "H":
+                c = " %s CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)" % op if carry else ""
+                lines.append("flag = flag | (CasNum.get_n(((%s & CasNum.get_n(0xF)) %s (%s & CasNum.get_n(0xF))%s) > CasNum.get_n(0xF)) << FLAGH)" % (r0, op, r1, c))
 
-        # flag |= (((cpu.SP & 0xFF) + (v & 0xFF)) > 0xFF) << FLAGC
-        if self.flag_c == "C":
-            lines.append("flag |= (((%s & 0xFF) %s (%s & 0xFF)%s) > 0xFF) << FLAGC" % (r0, op, r1, c))
+            # flag |= (((cpu.SP & 0xFF) + (v & 0xFF)) > 0xFF) << FLAGC
+            if self.flag_c == "C":
+                lines.append("flag = flag | (CasNum.get_n(((%s & CasNum.get_n(0xFF)) %s (%s & CasNum.get_n(0xFF))%s) > CasNum.get_n(0xFF)) << FLAGC)" % (r0, op, r1, c))
 
-        # Clears all flags affected by the operation
-        lines.append("cpu.F = 0b00000000")  # E8 and F8 clears N and Z. The rest are dynamic
-        lines.append("cpu.F |= flag")
-        return lines
+            # Clears all flags affected by the operation
+            lines.append("cpu.F = 0b00000000")  # E8 and F8 clears N and Z. The rest are dynamic
+            lines.append("cpu.F |= int(flag.p.x)")
+            return lines
+        else:
+            flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
+
+            # Only in case we do a dynamic operation, do we include the
+            # following calculations
+            if flagmask == 0b11110000:
+                return ["# No flag operations"]
+
+            lines = []
+            # Sets the flags that always get set by operation
+            lines.append("flag = " + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b"))
+
+            # flag |= (((cpu.SP & 0xF) + (v & 0xF)) > 0xF) << FLAGH
+            if self.flag_h == "H":
+                c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
+                lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) > 0xF) << FLAGH" % (r0, op, r1, c))
+
+            # flag |= (((cpu.SP & 0xFF) + (v & 0xFF)) > 0xFF) << FLAGC
+            if self.flag_c == "C":
+                lines.append("flag |= (((%s & 0xFF) %s (%s & 0xFF)%s) > 0xFF) << FLAGC" % (r0, op, r1, c))
+
+            # Clears all flags affected by the operation
+            lines.append("cpu.F = 0b00000000")  # E8 and F8 clears N and Z. The rest are dynamic
+            lines.append("cpu.F |= flag")
+            return lines
 
     def handleflags16bit(self, r0, r1, op, carry=False):
         flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
@@ -398,51 +425,83 @@ class OpcodeData:
 
         lines = []
         # Sets the ones that always get set by operation
-        lines.append("flag = " + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b"))
+        lines.append("flag = CasNum.get_n(" + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b") + ")")
 
         if self.flag_h == "H":
-            c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
-            lines.append("flag |= (((%s & 0xFFF) %s (%s & 0xFFF)%s) > 0xFFF) << FLAGH" % (r0, op, r1, c))
+            c = " %s CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)" % op if carry else ""
+            lines.append("flag = flag | (CasNum.get_n(((%s & CasNum.get_n(0xFFF)) %s (%s & CasNum.get_n(0xFFF))%s) > CasNum.get_n(0xFFF)) << FLAGH)" % (r0, op, r1, c))
 
         if self.flag_c == "C":
-            lines.append("flag |= (t > 0xFFFF) << FLAGC")
+            lines.append("flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFFFF)) << FLAGC)")
 
         # Clears all flags affected by the operation
         lines.append("cpu.F &= " + format(flagmask, "#010b"))
-        lines.append("cpu.F |= flag")
+        lines.append("cpu.F |= int(flag.p.x)")
         return lines
 
-    def handleflags8bit(self, r0, r1, op, carry=False):
-        flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
+    def handleflags8bit(self, r0, r1, op, carry=False, called_from_alu=False):
+        if called_from_alu:
+            flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
 
-        # Only in case we do a dynamic operation, do we include the
-        # following calculations
-        if flagmask == 0b11110000:
-            return ["# No flag operations"]
+            # Only in case we do a dynamic operation, do we include the
+            # following calculations
+            if flagmask == 0b11110000:
+                return ["# No flag operations"]
 
-        lines = []
-        # Sets the ones that always get set by operation
-        lines.append("flag = " + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b"))
+            lines = []
+            # Sets the ones that always get set by operation
+            lines.append("flag = CasNum.get_n(" + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b") + ")")
 
-        if self.flag_z == "Z":
-            lines.append("flag |= ((t & 0xFF) == 0) << FLAGZ")
+            if self.flag_z == "Z":
+                lines.append("flag = flag | (CasNum.get_n((t & CasNum.get_n(0xFF)) == zero) << FLAGZ)")
 
-        if self.flag_h == "H" and op == "-":
-            c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
-            lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) < 0) << FLAGH" % (r0, op, r1, c))
-        elif self.flag_h == "H":
-            c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
-            lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) > 0xF) << FLAGH" % (r0, op, r1, c))
+            if self.flag_h == "H" and op == "-":
+                c = " %s CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)" % op if carry else ""
+                lines.append("flag = flag | (CasNum.get_n(((%s & CasNum.get_n(0xF)) %s (%s & CasNum.get_n(0xF))%s) < zero) << FLAGH)" % (r0, op, r1, c))
+            elif self.flag_h == "H":
+                c = " %s CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)" % op if carry else ""
+                lines.append("flag = flag | (CasNum.get_n(((%s & CasNum.get_n(0xF)) %s (%s & CasNum.get_n(0xF))%s) > CasNum.get_n(0xF)) << FLAGH)" % (r0, op, r1, c))
 
-        if self.flag_c == "C" and op == "-":
-            lines.append("flag |= (t < 0) << FLAGC")
-        elif self.flag_c == "C":
-            lines.append("flag |= (t > 0xFF) << FLAGC")
+            if self.flag_c == "C" and op == "-":
+                lines.append("flag = flag | (CasNum.get_n(t < zero) << FLAGC)")
+            elif self.flag_c == "C":
+                lines.append("flag = flag | (CasNum.get_n(t > CasNum.get_n(0xFF)) << FLAGC)")
 
-        # Clears all flags affected by the operation
-        lines.append("cpu.F &= " + format(flagmask, "#010b"))
-        lines.append("cpu.F |= flag")
-        return lines
+            # Clears all flags affected by the operation
+            lines.append("cpu.F &= " + format(flagmask, "#010b"))
+            lines.append("cpu.F |= int(flag.p.x)")
+            return lines
+        else:
+            flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
+
+            # Only in case we do a dynamic operation, do we include the
+            # following calculations
+            if flagmask == 0b11110000:
+                return ["# No flag operations"]
+
+            lines = []
+            # Sets the ones that always get set by operation
+            lines.append("flag = " + format(sum(map(lambda nf: (nf[1] == "1") << (nf[0] + 4), self.flags)), "#010b"))
+
+            if self.flag_z == "Z":
+                lines.append("flag |= ((t & 0xFF) == 0) << FLAGZ")
+
+            if self.flag_h == "H" and op == "-":
+                c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
+                lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) < 0) << FLAGH" % (r0, op, r1, c))
+            elif self.flag_h == "H":
+                c = " %s ((cpu.F & (1 << FLAGC)) != 0)" % op if carry else ""
+                lines.append("flag |= (((%s & 0xF) %s (%s & 0xF)%s) > 0xF) << FLAGH" % (r0, op, r1, c))
+
+            if self.flag_c == "C" and op == "-":
+                lines.append("flag |= (t < 0) << FLAGC")
+            elif self.flag_c == "C":
+                lines.append("flag |= (t > 0xFF) << FLAGC")
+
+            # Clears all flags affected by the operation
+            lines.append("cpu.F &= " + format(flagmask, "#010b"))
+            lines.append("cpu.F |= flag")
+            return lines
 
     def handleflagsrotateshift(self, r0, r1, op, carry=False):
         flagmask = sum(map(lambda nf: (nf[1] == "-") << (nf[0] + 4), self.flags))
@@ -646,32 +705,32 @@ class OpcodeData:
         left.assign = False
         right.assign = False
 
-        lines.append(f"a = {left.get}")
-        lines.append(f"b = {right.get}")
+        lines.append(f"a = CasNum.get_n({left.get})")
+        lines.append(f"b = CasNum.get_n({right.get})")
 
         calc = " ".join(["t", "=", "a", op, "b"])
         if carry:
-            lines.append("c = ((cpu.F & (1 << FLAGC)) != 0)")
+            lines.append("c = CasNum.get_n((CasNum.get_n(cpu.F).get_nth_bit(FLAGC)) != zero)")
             calc += " " + op + " c"
 
         lines.append(calc)
 
         if self.opcode == 0xE8:
             # E8 and F8 http://forums.nesdev.com/viewtopic.php?p=42138
-            lines.extend(self.handleflags16bit_E8_F8(left.get, "v", op, carry))
-            lines.append("t &= 0xFFFF")
+            lines.extend(self.handleflags16bit_E8_F8(left.get, "v", op, carry, called_from_alu=True))
+            lines.append("t = t & CasNum.get_n(0xFFFF)")
         elif self.is16bit:
             lines.extend(self.handleflags16bit("a", "b", op, carry))
-            lines.append("t &= 0xFFFF")
+            lines.append("t = t & CasNum.get_n(0xFFFF)")
         else:
-            lines.extend(self.handleflags8bit("a", "b", op, carry))
-            lines.append("t &= 0xFF")
+            lines.extend(self.handleflags8bit("a", "b", op, carry, called_from_alu=True))
+            lines.append("t = t & CasNum.get_n(0xFF)")
 
         # HAS TO BE THE LAST INSTRUCTION BECAUSE OF CP!
         if left.set.count("%") > 1:
-            lines.append(left.set % ("t", "t"))
+            lines.append(left.set % ("int(t.p.x)", "int(t.p.x)"))
         else:
-            lines.append(left.set % "t")
+            lines.append(left.set % "int(t.p.x)")
         return lines
 
     def ADD(self):
